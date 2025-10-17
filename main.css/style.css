@@ -1,0 +1,107 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f0f0;
+    font-family: Arial, sans-serif;
+}
+
+.calculator {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    width: 300px;
+    background-color: #fff;
+}
+
+.calculator-screen {
+    width: 100%;
+    height: 70px;
+    background-color: #222;
+    color: #fff;
+    font-size: 2em;
+    text-align: right;
+    padding: 10px 20px;
+    box-sizing: border-box;
+    border: none;
+    outline: none;
+}
+
+.calculator-keys {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-gap: 1px; /* Небольшой зазор между кнопками */
+    background-color: #ccc; /* Цвет зазора */
+}
+
+.key {
+    background-color: #e0e0e0;
+    border: none;
+    font-size: 1.5em;
+    padding: 20px 0;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.key:hover {
+    background-color: #d5d5d5;
+}
+
+.key-operator {
+    background-color: #f39c12;
+    color: #fff;
+}
+
+.key-operator:hover {
+    background-color: #e69510;
+}
+
+.key-clear {
+    background-color: #d35400;
+    color: #fff;
+}
+
+.key-clear:hover {
+    background-color: #c04c00;
+}
+
+.key-equal {
+    background-color: #27ae60;
+    color: #fff;
+    grid-column: span 2; /* Кнопка "=" занимает две колонки */
+}
+
+.key-equal:hover {
+    background-color: #229954;
+}
+
+.key-number,
+.key-decimal {
+    background-color: #f9f9f9;
+}
+
+.key-number:hover,
+.key-decimal:hover {
+    background-color: #eee;
+}
+
+/* Стили для расположения кнопок */
+.calculator-keys button:nth-child(4n+1) { /* Первая кнопка в ряду */ }
+.calculator-keys button:nth-child(4n+2) { /* Вторая кнопка в ряду */ }
+.calculator-keys button:nth-child(4n+3) { /* Третья кнопка в ряду */ }
+.calculator-keys button:nth-child(4n) { /* Четвертая кнопка в ряду */ }
+
+/* Стили для нулевой кнопки, чтобы она была чуть больше */
+.calculator-keys button[data-value="0"] {
+    grid-column: span 1; /* Может быть изменено, если нужно, чтобы 0 занимал больше места */
+}
+
+/* Кнопка "=" расположена в конце */
+.key-equal {
+    grid-column: span 2;
+}
