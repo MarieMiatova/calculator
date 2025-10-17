@@ -1,73 +1,144 @@
 const calculator = document.querySelector('.calculator');
-const keys = calculator.querySelector('.calculator-keys');
-const screen = calculator.querySelector('.calculator-screen');
+const keys = calculator.querySelector('.buttons');
+const screen = document.getElementById('display');
+const historyList = document.getElementById('history-list');
 
-const calculate = (n1, operator, n2) => {
-    let result = 0;
+let previousNum = null;
+let operator = null;
+let previousKey = null;
+let memory = 0;
 
-    if (operator === 'add') {
-        result = parseFloat(n1) + parseFloat(n2);
-    } else if (operator === 'subtract') {
-        result = parseFloat(n1) - parseFloat(n2);
-    } else if (operator === 'multiply') {
-        result = parseFloat(n1) * parseFloat(n2);
-    } else if (operator === 'divide') {
-        result = parseFloat(n1) / parseFloat(n2);
-    }
-
-    return result;
+const calculate = (n1, op, n2) => {
+  const a = parseFloat(n1);
+  const b = parseFloat(n2);
+  if (isNaN(a) || isNaN(b)) return '';
+  switch (op) {
+    case '+': return (a + b).toString();
+    case '−': return (a - b).toString();
+    case '×': return (a * b).toString();
+    case '÷': return b === 0 ? 'Error' : (a / b).toString();
+    default: return '';
+  }
 };
 
-keys.addEventListener('click', event => {
-    const target = event.target;
-    const action = target.dataset.action;
-    const key = target.textContent;
-    const displayedNum = screen.value;
-    const previousKey = calculator.dataset.previousKey;
-    const previousNum = calculator.dataset.previousNum;
-    const operator = calculator.dataset.operator;
 
-    // Если нажата цифра
-    if (!action) {
-        if (displayedNum === '0' || previousKey === 'operator' || previousKey === 'calculate') {
-            screen.value = key;
-        } else {
-            screen.value += key;
-        }
-        calculator.dataset.previousKey = 'number';
-    }
+function addToHistory(expression, result) {
+  const li = document.createElement('li');
+  li.textContent = `${expression} = ${result}`;
+  historyList.prepend(li); 
+}
 
-    // Если нажата точка
-    if (key === '.') {
-        if (!displayedNum.includes('.') && displayedNum !== '0') {
-            screen.value += '.';
-        } else if (displayedNum === '0') {
-            screen.value = '0.';
-        }
-        calculator.dataset.previousKey = 'decimal';
-    }
+keys.addEventListener('click', (e) => {
+  const btn = e.target;
+  if (btn.tagName !== 'BUTTON') return;
 
-    // Если нажата кнопка операции (+, -, *, /)
-    if (action === 'add' || action === 'subtract' || action === 'multiply' || action === 'divide') {
-        calculator.dataset.previousNum = displayedNum;
-        calculator.dataset.operator = action;
-        calculator.dataset.previousKey = 'operator';
-    }
+  const key = btn.textContent.trim();
+  const displayed = screen.textContent.trim();
 
-    // Если нажата кнопка "="
-    if (action === 'calculate') {
-        const result = calculate(previousNum, operator, displayedNum);
-        screen.value = result;
-        calculator.dataset.previousKey = 'calculate';
-        calculator.dataset.previousNum = undefined; // Сброс предыдущего числа
-        calculator.dataset.operator = undefined; // Сброс оператора
-    }
 
-    // Если нажата кнопка "AC" (очистить)
-    if (action === 'clear') {
-        screen.value = '0';
-        calculator.dataset.previousNum = undefined;
-        calculator.dataset.operator = undefined;
-        calculator.dataset.previousKey = undefined;
+  if (!isNaN(key) && key !== '') {
+    if (displayed === '0' || previousKey === 'operator' || previousKey === 'calculate') {
+      screen.textContent = key;
+    } else {
+      if (displayed.length < 16) screen.textContent = displayed + key;
     }
+    previousKey = 'number';
+    return;
+  }
+
+
+  if (key === '.') {
+    if (!displayed.includes('.')) {
+      screen.textContent = displayed + '.';
+    } else if (previousKey === 'operator' || previousKey === 'calculate') {
+      screen.textContent = '0.';
+    }
+    previousKey = 'decimal';
+    return;
+  }
+
+
+  if (['+', '−', '×', '÷'].includes(key)) {
+    if (previousNum !== null && operator && previousKey !== 'operator' && previousKey !== null) {
+      const result = calculate(previousNum, operator, displayed);
+      addToHistory(`${previousNum} ${operator} ${displayed}`, result);
+      screen.textContent = result;
+      previousNum = result;
+    } else {
+      previousNum = displayed;
+    }
+    operator = key;
+    previousKey = 'operator';
+    return;
+  }
+
+
+  if (key === '=') {
+    if (previousNum !== null && operator) {
+      const result = calculate(previousNum, operator, displayed);
+      addToHistory(`${previousNum} ${operator} ${displayed}`, result);
+      screen.textContent = result;
+      previousNum = null;
+      operator = null;
+      previousKey = 'calculate';
+    }
+    return;
+  }
+
+
+  if (key === 'C' || key === 'C/CE') {
+    screen.textContent = '0';
+    previousNum = null;
+    operator = null;
+    previousKey = null;
+    return;
+  }
+
+
+  if (key === 'OFF') {
+    screen.textContent = '';
+    calculator.style.opacity = '0.6';
+    return;
+  }
+
+
+  if (key === '√') {
+    const val = parseFloat(displayed);
+    if (!isNaN(val)) {
+      const result = (val >= 0 ? Math.sqrt(val) : 'Error').toString();
+      addToHistory(`√(${displayed})`, result);
+      screen.textContent = result;
+      previousKey = 'calculate';
+    }
+    return;
+  }
+
+
+  if (key === '%') {
+    const val = parseFloat(displayed);
+    if (!isNaN(val)) {
+      const result = (val / 100).toString();
+      addToHistory(`${displayed}%`, result);
+      screen.textContent = result;
+      previousKey = 'calculate';
+    }
+    return;
+  }
+
+
+  if (key === 'MRC') {
+    screen.textContent = memory.toString();
+    previousKey = 'memory';
+    return;
+  }
+  if (key === 'M-') {
+    memory -= parseFloat(displayed) || 0;
+    previousKey = 'memory';
+    return;
+  }
+  if (key === 'M+') {
+    memory += parseFloat(displayed) || 0;
+    previousKey = 'memory';
+    return;
+  }
 });
